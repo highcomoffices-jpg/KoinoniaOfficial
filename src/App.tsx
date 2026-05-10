@@ -55,6 +55,13 @@ const clearRemindLaterChoice = (userId: string): void => {
 
 function App() {
   const { user, isLoading } = useAuth();
+
+  // 🔧 DEBUG TEMPORAIRE : Logs pour diagnostiquer le blocage
+  useEffect(() => {
+    console.log('🔍 DEBUG App - isLoading:', isLoading);
+    console.log('🔍 DEBUG App - user:', user ? user.email : 'null');
+  }, [isLoading, user]);
+
   const [authView, setAuthView] = useState<AuthView>('login');
   const [activeTab, setActiveTab] = useState('home');
   const [hasSkippedProfileCompletion, setHasSkippedProfileCompletion] = useState(false);
@@ -206,16 +213,13 @@ function App() {
     }
   };
 
-  // Layout principal avec sidebar fixe et contenu qui l'accompagne
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <div className="flex">
         <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
         
-        {/* Contenu principal avec marge gauche pour la sidebar fixe */}
         <main className="flex-1 md:ml-64">
-          {/* Bannière de rappel pour profil incomplet */}
           {showProfileReminder && user && !user.profileComplete && activeTab !== 'profile' && (
             <div className="bg-gradient-to-r from-amber-50 to-warm-50 border-b border-amber-200 px-4 py-3">
               <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
