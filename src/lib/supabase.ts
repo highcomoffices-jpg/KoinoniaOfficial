@@ -33,6 +33,12 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+// 🔧 DEBUG TEMPORAIRE : Exposer supabase dans la console pour diagnostic
+if (typeof window !== 'undefined') {
+  (window as any).supabase = supabase;
+  console.log('🔧 DEBUG: supabase exposé globalement pour diagnostic');
+}
+
 // Helper functions
 export const getSupabase = () => supabase;
 
