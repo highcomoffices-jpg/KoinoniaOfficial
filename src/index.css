@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Scrollbar personnalisée pour la sidebar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 0.375rem;
+}
+
+.scrollbar-track-gray-100::-webkit-scrollbar-track {
+  background-color: #f3f4f6;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Animations personnalisées */
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Styles pour le lecteur vidéo */
+.slider {
+  background: linear-gradient(to right, #f59e0b 0%, #f59e0b var(--progress, 0%), #6b7280 var(--progress, 0%), #6b7280 100%);
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f59e0b;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f59e0b;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Animation pour les compteurs */
+@keyframes countUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-count-up {
+  animation: countUp 0.5s ease-out;
+}
+
+/* Styles pour les cartes de formation */
+.formation-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.formation-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Animation pour les badges */
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-badge-pulse {
+  animation: badgePulse 2s infinite;
+}
+
+/* Styles pour les barres de progression */
+.progress-bar-glow {
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+/* Responsive pour les grilles de formations */
+@media (max-width: 640px) {
+  .formation-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .formation-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .formation-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* =====================================================
+   CORRECTIONS POUR L'ALIGNEMENT MOBILE
+   ===================================================== */
+
+/* Empêcher le scroll horizontal sur toute la page */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+}
+
+/* Forcer tous les conteneurs à respecter la largeur de l'écran */
+* {
+  box-sizing: border-box;
+}
+
+/* Éviter les débordements sur les éléments de texte */
+p, h1, h2, h3, h4, span, div {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Conteneurs principaux */
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Images et médias responsives */
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ajustement pour le header fixe */
+body {
+  padding-top: 48px; /* 12px * 4 = 48px pour mobile */
+}
+
+@media (min-width: 640px) {
+  body {
+    padding-top: 56px; /* 14px * 4 = 56px pour desktop */
+  }
+}
+
+/* Empêcher le scroll horizontal */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+}
+
+/* Conteneur principal pour ne pas être sous le header */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
