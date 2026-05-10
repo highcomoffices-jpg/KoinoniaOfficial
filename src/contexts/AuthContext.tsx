@@ -41,6 +41,8 @@ const convertSupabaseProfileToUser = async (
   profile: Database['public']['Tables']['profiles']['Row'],
   _authUser?: any
 ): Promise<User> => {
+  console.log('🔵 convertSupabaseProfileToUser - début pour ID:', profile.id);
+  
   const user: User = {
     id: profile.id,
     email: profile.email,
@@ -62,6 +64,7 @@ const convertSupabaseProfileToUser = async (
   // Chargement asynchrone des relations
   if (profile.country_id) {
     try {
+      console.log('🔵 Chargement pays:', profile.country_id);
       const countryData = await geoService.getCountryById(profile.country_id);
       if (countryData) {
         user.country = {
@@ -80,6 +83,7 @@ const convertSupabaseProfileToUser = async (
           } : undefined,
           cities: []
         };
+        console.log('✅ Pays chargé:', countryData.name);
       }
     } catch (error) {
       console.warn('Could not load country:', error);
@@ -88,6 +92,7 @@ const convertSupabaseProfileToUser = async (
 
   if (profile.confession_id) {
     try {
+      console.log('🔵 Chargement confession:', profile.confession_id);
       const confessionData = await geoService.getConfessionById(profile.confession_id);
       if (confessionData) {
         user.confession = {
@@ -96,6 +101,7 @@ const convertSupabaseProfileToUser = async (
           description: confessionData.description || '',
           validated: confessionData.validated || false
         };
+        console.log('✅ Confession chargée:', confessionData.name);
       }
     } catch (error) {
       console.warn('Could not load confession:', error);
@@ -104,6 +110,7 @@ const convertSupabaseProfileToUser = async (
 
   if (profile.parish_id) {
     try {
+      console.log('🔵 Chargement paroisse:', profile.parish_id);
       const parishData = await geoService.getParishById(profile.parish_id);
       if (parishData) {
         user.parish = {
@@ -114,6 +121,7 @@ const convertSupabaseProfileToUser = async (
           address: parishData.address || '',
           validated: parishData.validated || false
         };
+        console.log('✅ Paroisse chargée:', parishData.name);
       }
     } catch (error) {
       console.warn('Could not load parish:', error);
@@ -122,15 +130,18 @@ const convertSupabaseProfileToUser = async (
 
   if (profile.city_id) {
     try {
+      console.log('🔵 Chargement ville:', profile.city_id);
       const cityData = await geoService.getCityById(profile.city_id);
       if (cityData) {
         user.city = cityData.name;
+        console.log('✅ Ville chargée:', cityData.name);
       }
     } catch (error) {
       console.warn('Could not load city:', error);
     }
   }
 
+  console.log('🔵 convertSupabaseProfileToUser - fin, user créé');
   return user;
 };
 
@@ -141,43 +152,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Load user from Supabase on mount
   useEffect(() => {
     const loadUser = async () => {
+      console.log('🔵 loadUser - début');
       try {
         setIsLoading(true);
         
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error('Error getting session:', sessionError);
+          console.error('🔴 Error getting session:', sessionError);
           setIsLoading(false);
           return;
         }
         
         if (session?.user) {
-          console.log('User session found:', session.user.id);
+          console.log('🟢 User session found:', session.user.id);
           
-          // Use maybeSingle() instead of single() to avoid 406 error
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
-            .maybeSingle(); // ← CHANGÉ : maybeSingle au lieu de single
+            .maybeSingle();
             
           if (profileError) {
-            console.error('Error loading profile:', profileError);
+            console.error('🔴 Error loading profile:', profileError);
+            setIsLoading(false);
           } else if (profile) {
-            console.log('Profile loaded:', profile.email);
+            console.log('🟢 Profile loaded:', profile.email);
             const userData = await convertSupabaseProfileToUser(profile, session.user);
             setUser(userData);
+            console.log('🟢 User set, isLoading va passer à false');
           } else {
-            console.log('Profile not found for user:', session.user.id);
-            // Profile doesn't exist, will be created on first login/registration
+            console.log('🟡 Profile not found for user:', session.user.id);
           }
         } else {
-          console.log('No active session found');
+          console.log('🟡 No active session found');
         }
       } catch (error) {
-        console.error('Error in loadUser:', error);
+        console.error('🔴 Error in loadUser:', error);
       } finally {
+        console.log('🔵 loadUser - finally, isLoading=false');
         setIsLoading(false);
       }
     };
@@ -186,41 +199,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event);
+        console.log('🔵 Auth state changed:', event);
         
         if (event === 'SIGNED_IN' && session?.user) {
+          console.log('🔵 1. SIGNED_IN - début du traitement');
           try {
-            // Use maybeSingle() instead of single()
-            const { data: profile } = await supabase
+            console.log('🔵 2. Appel maybeSingle() pour ID:', session.user.id);
+            const { data: profile, error } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
-              .maybeSingle(); // ← CHANGÉ : maybeSingle au lieu de single
+              .maybeSingle();
+            
+            console.log('🔵 3. maybeSingle() terminé, profile:', profile ? 'trouvé' : 'non trouvé');
+            if (error) {
+              console.error('🔴 3b. Erreur maybeSingle:', error);
+            }
               
             if (profile) {
+              console.log('🔵 4. Profile trouvé, appel convertSupabaseProfileToUser');
               const userData = await convertSupabaseProfileToUser(profile, session.user);
+              console.log('🔵 5. convert terminé, appel setUser');
               setUser(userData);
+              console.log('🔵 6. setUser effectué, puis setIsLoading(false)');
+              setIsLoading(false);
             } else {
-              // Profile doesn't exist yet, wait a bit and retry
+              console.log('🟡 Profile non trouvé, attente 1s puis retry');
               setTimeout(async () => {
+                console.log('🔵 Retry - appel maybeSingle()');
                 const { data: retryProfile } = await supabase
                   .from('profiles')
                   .select('*')
                   .eq('id', session.user.id)
-                  .maybeSingle(); // ← CHANGÉ : maybeSingle au lieu de single
+                  .maybeSingle();
                   
                 if (retryProfile) {
+                  console.log('🟢 Retry réussi, création user');
                   const userData = await convertSupabaseProfileToUser(retryProfile, session.user);
                   setUser(userData);
+                  setIsLoading(false);
+                } else {
+                  console.log('🔴 Retry échoué, aucun profil trouvé');
+                  setIsLoading(false);
                 }
               }, 1000);
             }
           } catch (error) {
-            console.error('Error in auth state change:', error);
+            console.error('🔴 Error in auth state change:', error);
+            setIsLoading(false);
           }
         } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
+          console.log('🟡 User signed out');
           setUser(null);
+          setIsLoading(false);
         }
       }
     );
@@ -514,12 +545,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
-      // Use maybeSingle() instead of single()
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
-        .maybeSingle(); // ← CHANGÉ : maybeSingle au lieu de single
+        .maybeSingle();
 
       if (error) {
         console.error('Error refreshing user profile:', error);
